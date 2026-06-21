@@ -25,14 +25,19 @@
         (base32 "0z01s825vhkylmfqhr3whj9pds6w9vys7yb3s4ja208yx6x3l0d2"))))
     (build-system gnu-build-system)
     (arguments
-     '(#:tests? #f
-       #:make-flags (list "CC=gcc"
-                          (string-append "PREFIX=" %output))
-       #:phases (modify-phases %standard-phases
-                  (delete 'configure)
-                  (add-before 'build 'copy-config
-                    (lambda _
-                      (copy-file #$(local-file "../../config/hevel-config.h") "config.h"))))))
+     (list
+      #:tests? #f
+      #:make-flags
+      #~(list "CC=gcc"
+              (string-append "PREFIX="
+                             #$output))
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure)
+          (add-before 'build 'copy-config
+            (lambda _
+              (copy-file #$(local-file "../../config/hevel-config.h")
+                         "config.h"))))))
     (native-inputs (list pkg-config))
     (inputs (list wayland
                   libdrm
