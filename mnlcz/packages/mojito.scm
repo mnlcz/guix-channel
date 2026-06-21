@@ -5,6 +5,7 @@
   #:use-module (guix licenses)
   #:use-module (gnu packages commencement)
   #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages fontutils)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages xdisorg)
   #:use-module (mnlcz packages neuwld)
@@ -29,7 +30,12 @@
        #:phases (modify-phases %standard-phases
                   (delete 'configure))))
     (native-inputs (list pkg-config wayland gcc-toolchain))
-    (inputs (list wayland libdrm neuwld neuswc))
+    (inputs (list wayland
+                  libdrm
+                  pixman
+                  fontconfig
+                  neuwld
+                  neuswc))
     (synopsis "Featherweight lemonbar-compatible bar for Wayland")
     (description
      "mojito is a minimal, lemonbar-compatible status bar for Wayland compositors using neuswc.")
