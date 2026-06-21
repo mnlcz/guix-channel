@@ -6,6 +6,10 @@
                 #:prefix license:)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages freedesktop)
+  #:use-module (gnu packages fontutils)
+  #:use-module (gnu packages graphics)
+  #:use-module (gnu packages linux)
+  #:use-module (gnu packages xdisorg)
   #:use-module (mnlcz packages neuswc))
 
 (define-public hevel
@@ -29,7 +33,14 @@
                     (lambda _
                       (copy-file "config.def.h" "config.h"))))))
     (native-inputs (list pkg-config))
-    (inputs (list wayland neuswc))
+    (inputs (list wayland
+                  libdrm
+                  libxkbcommon
+                  pixman
+                  libinput
+                  eudev
+                  fontconfig
+                  neuswc))
     (synopsis "Wayland compositor based on swc")
     (description "hevel is a small Wayland compositor built on top of neuswc.")
     (home-page "https://git.sr.ht/~dlm/hevel")
