@@ -6,7 +6,7 @@
   #:use-module (gnu packages commencement)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages freedesktop)
-  #:use-module (gnu packages graphics)
+  #:use-module (gnu packages xdisorg)
   #:use-module (mnlcz packages neuwld)
   #:use-module (mnlcz packages neuswc))
 
