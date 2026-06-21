@@ -2,6 +2,7 @@
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix build-system gnu)
+  #:use-module (guix gexp)
   #:use-module ((guix licenses)
                 #:prefix license:)
   #:use-module (gnu packages pkg-config)
@@ -31,7 +32,7 @@
                   (delete 'configure)
                   (add-before 'build 'copy-config
                     (lambda _
-                      (copy-file "config.def.h" "config.h"))))))
+                      (copy-file #$(local-file "../../config/hevel-config.h") "config.h"))))))
     (native-inputs (list pkg-config))
     (inputs (list wayland
                   libdrm
