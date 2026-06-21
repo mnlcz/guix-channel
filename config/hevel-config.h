@@ -30,7 +30,7 @@ static const char *const cursor_theme = "nein";
 /* recommended st-wl/hst (stock st-wl has some issues) or havoc
  * but anything will work just fine */
 static const char *const select_term_app_id = "havoc";
-static const char *const term = "havoc";
+static const char *const term = "/home/mnlcz/.local/bin/havoc";
 
 /* a flag for your terminal emulator to setup a windowid
  * - for st-wl: -w
