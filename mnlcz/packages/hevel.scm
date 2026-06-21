@@ -5,6 +5,7 @@
   #:use-module ((guix licenses)
                 #:prefix license:)
   #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages freedesktop)
   #:use-module (mnlcz packages neuswc))
 
 (define-public hevel
@@ -20,7 +21,7 @@
     (build-system gnu-build-system)
     (arguments
      '(#:tests? #f
-       #:make-flags (list (string-append "CC=gcc")
+       #:make-flags (list "CC=gcc"
                           (string-append "PREFIX=" %output))
        #:phases (modify-phases %standard-phases
                   (delete 'configure)
@@ -28,7 +29,7 @@
                     (lambda _
                       (copy-file "config.def.h" "config.h"))))))
     (native-inputs (list pkg-config))
-    (inputs (list neuswc))
+    (inputs (list wayland neuswc))
     (synopsis "Wayland compositor based on swc")
     (description "hevel is a small Wayland compositor built on top of neuswc.")
     (home-page "https://git.sr.ht/~dlm/hevel")
