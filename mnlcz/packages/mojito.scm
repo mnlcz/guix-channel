@@ -3,8 +3,10 @@
   #:use-module (guix download)
   #:use-module (guix build-system gnu)
   #:use-module (guix licenses)
+  #:use-module (gnu packages commencement)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages freedesktop)
+  #:use-module (gnu packages graphics)
   #:use-module (mnlcz packages neuwld)
   #:use-module (mnlcz packages neuswc))
 
@@ -22,11 +24,12 @@
     (build-system gnu-build-system)
     (arguments
      '(#:tests? #f
-       #:make-flags (list (string-append "PREFIX=" %output))
+       #:make-flags (list "CC=gcc"
+                          (string-append "PREFIX=" %output))
        #:phases (modify-phases %standard-phases
                   (delete 'configure))))
-    (native-inputs (list pkg-config wayland))
-    (inputs (list wayland neuwld neuswc))
+    (native-inputs (list pkg-config wayland gcc-toolchain))
+    (inputs (list wayland libdrm neuwld neuswc))
     (synopsis "Featherweight lemonbar-compatible bar for Wayland")
     (description
      "mojito is a minimal, lemonbar-compatible status bar for Wayland compositors using neuswc.")
