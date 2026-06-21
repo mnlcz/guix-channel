@@ -28,9 +28,16 @@
        #:make-flags (list "CC=gcc"
                           (string-append "PREFIX=" %output))
        #:phases (modify-phases %standard-phases
-                  (delete 'configure))))
+                  (delete 'configure)
+                  (add-before 'build 'fix-pixman-include
+                    (lambda* (#:key inputs #:allow-other-keys)
+                      (setenv "C_INCLUDE_PATH"
+                              (string-append (assoc-ref inputs "pixman")
+                                             "/include/pixman-1:"
+                                             (or (getenv "C_INCLUDE_PATH") ""))))))))
     (native-inputs (list pkg-config wayland gcc-toolchain))
     (inputs (list wayland
+                  wayland-protocols
                   libdrm
                   pixman
                   fontconfig
