@@ -26,7 +26,7 @@
     (arguments
      '(#:tests? #f
        #:make-flags (list "CC=gcc"
-                          (string-append "PREFIX=" %output))
+                          (string-append "DESTDIR=" %output))
        #:phases (modify-phases %standard-phases
                   (delete 'configure)
                   (add-before 'build 'fix-includes
