@@ -5,12 +5,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-static const uint32_t background_color = 0xff777777;
+static const uint32_t background_color = 0x00000000;
 
-static const uint32_t outer_border_color_inactive = 0xffffffea;
-static const uint32_t inner_border_color_inactive = 0xffddbd8c;
+static const uint32_t outer_border_color_inactive = 0x00000000;
+static const uint32_t inner_border_color_inactive = 0x00000000;
 
-static const uint32_t outer_border_color_active = 0xffffffea;
+static const uint32_t outer_border_color_active = 0x00000000;
 static const uint32_t inner_border_color_active = 0x00000000;
 
 static const uint32_t outer_border_width = 4;
