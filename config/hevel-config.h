@@ -67,7 +67,7 @@ static const bool scroll_drag_mode = true;
  * - when enabled: scroll wheel controls zoom when in drag scroll mode
  * broken for multiple monitors
  */
-static const bool enable_zoom = false;
+static const bool enable_zoom = true;
 
 /* whether or not to center the window.
  * in drag mode, it centers on both axis
@@ -81,7 +81,7 @@ static const bool center_focus = true;
  * - fullscreen: make a window take entire screen
  * - jump: switch focus to the closest window
  */
-static const char *const custom_chord = "jump";
+static const char *const custom_chord = "fullscreen";
 
 #endif
 
