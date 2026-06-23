@@ -21,7 +21,8 @@
        (uri
         "https://git.sr.ht/~dlm/mojito/archive/4c6b988e1927cff3bd6ffe22c552c31cd356dfca.tar.gz")
        (sha256
-        (base32 "140l4fppcc0d9bbqlgrhaskphsmshyicab4sbjndx8x2rn10gpjs"))))
+        (base32 "140l4fppcc0d9bbqlgrhaskphsmshyicab4sbjndx8x2rn10gpjs"))
+       (patches (list (local-file '../../patches/mojito-fix-flush.patch)))))
     (build-system gnu-build-system)
     (arguments
      '(#:tests? #f
