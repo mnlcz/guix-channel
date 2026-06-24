@@ -3,6 +3,7 @@
   #:use-module (guix download)
   #:use-module (guix build-system gnu)
   #:use-module (guix licenses)
+  #:use-module (guix gexp)
   #:use-module (gnu packages commencement)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages fontutils)
@@ -22,7 +23,8 @@
         "https://git.sr.ht/~dlm/mojito/archive/4c6b988e1927cff3bd6ffe22c552c31cd356dfca.tar.gz")
        (sha256
         (base32 "140l4fppcc0d9bbqlgrhaskphsmshyicab4sbjndx8x2rn10gpjs"))
-       (patches (list (local-file '../../patches/mojito-fix-flush.patch)))))
+    (patches (list (local-file
+                "/home/mnlcz/Projects/guix-channel/patches/mojito-fix-flush.patch")))))
     (build-system gnu-build-system)
     (arguments
      '(#:tests? #f

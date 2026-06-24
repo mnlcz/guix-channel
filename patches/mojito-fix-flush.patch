@@ -1,43 +1,46 @@
+diff --git a/mojito.c b/mojito.c
+index 4e60402..a5448b3 100644
 --- a/mojito.c
 +++ b/mojito.c
-@@ -8,6 +8,7 @@
+@@ -1,6 +1,7 @@
+ #define _POSIX_C_SOURCE 200809L
+ 
+ #include <ctype.h>
++#include <errno.h>
  #include <poll.h>
  #include <stdio.h>
  #include <stdlib.h>
-+#include <errno.h>
- #include <string.h>
- #include <unistd.h>
+@@ -614,14 +615,20 @@ run(void)
+   struct screen *screen;
  
-@@ -241,7 +242,7 @@ run(void)
    fds[0].fd = wl_display_get_fd(display);
 -  fds[0].events = POLLIN;
 +  fds[0].events = POLLIN | POLLOUT;
    fds[1].fd = STDIN_FILENO;
    fds[1].events = POLLIN;
  
-@@ -249,7 +250,13 @@ run(void)
-     if (wl_display_flush(display) == -1) {
--      break;
-+      if (errno != EAGAIN) {
-+        break;
-+      }
-+      /* output buffer full, wait for writability */
+   while (true) {
+-    if (wl_display_flush(display) == -1) {
++    int flush_ret = wl_display_flush(display);
++    if (flush_ret == -1 && errno != EAGAIN) {
+       break;
+     }
++    if (flush_ret == -1) {
 +      fds[0].events = POLLIN | POLLOUT;
 +    } else {
-+      /* flush succeeded, stop watching for writability */
 +      fds[0].events = POLLIN;
-     }
++    }
  
      if (poll(fds, 2, -1) == -1) {
-@@ -258,6 +265,11 @@ run(void)
- 
-     if (fds[0].revents & POLLIN) {
-       if (wl_display_dispatch(display) == -1) {
-         break;
+       break;
+@@ -633,6 +640,10 @@ run(void)
        }
      }
-+
+ 
 +    if (fds[0].revents & POLLOUT) {
-+      /* socket writable again, flush pending data */
 +      wl_display_flush(display);
 +    }
++
+     if (fds[1].revents & POLLIN) {
+       ssize_t n = read(STDIN_FILENO, input_buf, sizeof(input_buf) - 1);
+ 
