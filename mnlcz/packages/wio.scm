@@ -11,7 +11,6 @@
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages xdisorg)
   #:use-module (gnu packages wm)
-  #:use-module (nongnu packages nvidia))
 
 (define-public wio
   (package
