@@ -67,7 +67,7 @@ static const bool scroll_drag_mode = true;
  * - when enabled: scroll wheel controls zoom when in drag scroll mode
  * broken for multiple monitors
  */
-static const bool enable_zoom = true;
+static const bool enable_zoom = false;
 
 /* whether or not to center the window.
  * in drag mode, it centers on both axis
