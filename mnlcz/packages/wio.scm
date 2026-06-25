@@ -10,7 +10,8 @@
   #:use-module (gnu packages graphics)
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages xdisorg)
-  #:use-module (gnu packages wm))
+  #:use-module (gnu packages wm)
+  #:use-module (nongnu packages nvidia))
 
 (define-public wio
   (package
@@ -51,7 +52,8 @@ Type=Application
                   libdrm
                   wayland
                   wayland-protocols
-                  wlroots
+                  (replace-mesa wlroots
+                                #:driver nvda-580)
                   libxkbcommon
                   cage))
     (synopsis "Wayland compositor inspired by Plan 9's rio")
