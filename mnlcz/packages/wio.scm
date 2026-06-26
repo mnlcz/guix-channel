@@ -3,13 +3,15 @@
   #:use-module (guix download)
   #:use-module (guix gexp)
   #:use-module (guix build-system meson)
-  #:use-module ((guix licenses) #:prefix license:)
+  #:use-module ((guix licenses)
+                #:prefix license:)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages graphics)
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages xdisorg)
-  #:use-module (gnu packages wm))
+  #:use-module (gnu packages wm)
+  #:use-module (nongnu packages nvidia))
 
 (define-public wio
   (package
@@ -37,23 +39,20 @@
               (let ((share (string-append (assoc-ref outputs "out")
                                           "/share/wayland-sessions")))
                 (mkdir-p share)
-                (call-with-output-file
-                    (string-append share "/wio.desktop")
+                (call-with-output-file (string-append share "/wio.desktop")
                   (lambda (port)
-                    (display
-                     "[Desktop Entry]
+                    (display "[Desktop Entry]
 Name=wio
 Comment=Rio-inspired Wayland compositor
 Exec=wio -t havoc
 Type=Application
-"
-                     port)))))))))
+" port)))))))))
     (native-inputs (list pkg-config))
     (inputs (list cairo
                   libdrm
                   wayland
                   wayland-protocols
-                  wlroots
+                  (replace-mesa wlroots)
                   libxkbcommon
                   cage))
     (synopsis "Wayland compositor inspired by Plan 9's rio")
