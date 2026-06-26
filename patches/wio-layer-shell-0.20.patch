@@ -1,0 +1,15 @@
+diff --git a/layers.c b/layers.c
+index 6c5daaf..33bd25f 100644
+--- a/layers.c
++++ b/layers.c
+@@ -146,7 +146,9 @@ static void arrange_layer(struct wlr_output *output,
+ 		apply_exclusive(usable_area, state->anchor, state->exclusive_zone,
+ 				state->margin.top, state->margin.right,
+ 				state->margin.bottom, state->margin.left);
+-		wlr_layer_surface_v1_configure(layer, box.width, box.height);
++		if (layer->initialized) {
++			wlr_layer_surface_v1_configure(layer, box.width, box.height);
++		}
+ 	}
+ }
+ 
