@@ -34,17 +34,37 @@
               (substitute* "meson.build"
                 (("wlroots-0\\.19")
                  "wlroots-0.20"))))
-          (add-after 'install 'install-desktop-file
+          (add-after 'install 'install-extras
             (lambda* (#:key outputs #:allow-other-keys)
-              (let ((share (string-append (assoc-ref outputs "out")
-                                          "/share/wayland-sessions")))
+              (let* ((out (assoc-ref outputs "out"))
+                     (share (string-append out "/share/wayland-sessions"))
+                     (bin (string-append out "/bin/wio-session")))
                 (mkdir-p share)
+                (call-with-output-file bin
+                  (lambda (port)
+                    (display (string-append "#!/bin/sh\n"
+                              "export __EGL_VENDOR_LIBRARY_FILENAMES="
+                              "/gnu/store/jjvaib8vmzwrw39g9p8jzxmhl7k2hafw-nvda-580.15"
+                              "/share/glvnd/egl_vendor.d/10_nvidia.x86_64.json
+"
+                              "export __EGL_EXTERNAL_PLATFORM_CONFIG_DIRS="
+                              "/gnu/store/mg4kkzdvclsqpi43x0aa2nnrksqz791v-egl-wayland2-1.0.1"
+                              "/share/egl/egl_external_platform.d:"
+                              "/gnu/store/h5qvl0sssi8p2knrfyvz5r0xhas2-egl-gbm-1.1.3"
+                              "/share/egl/egl_external_platform.d\n"
+                              "export VK_ICD_FILENAMES="
+                              "/gnu/store/jjvaib8vmzwrw39g9p8jzxmhl7k2hafw-nvda-580.15"
+                              "/share/vulkan/icd.d/nvidia_icd.x86_64.json
+"
+                              "export WLR_NO_HARDWARE_CURSORS=1\n"
+                              "exec wio -t havoc\n") port)))
+                (chmod bin #o755)
                 (call-with-output-file (string-append share "/wio.desktop")
                   (lambda (port)
                     (display "[Desktop Entry]
 Name=wio
 Comment=Rio-inspired Wayland compositor
-Exec=wio -t havoc
+Exec=wio-session
 Type=Application
 " port)))))))))
     (native-inputs (list pkg-config))
