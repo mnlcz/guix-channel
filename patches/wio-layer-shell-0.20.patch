@@ -1,15 +1,18 @@
 diff --git a/layers.c b/layers.c
-index 6c5daaf..11458f2 100644
+index 6c5daaf..e2ba95f 100644
 --- a/layers.c
 +++ b/layers.c
-@@ -277,10 +277,4 @@ void server_new_layer_surface(struct wl_listener *listener, void *data) {
- 
- 	// TODO: Listen for subsurfaces
- 	wl_list_insert(&output->layers[layer_surface->pending.layer], &wio_surface->link);
--	// Temporarily set the layer's current state to `pending`
--	// So that we can easily arrange it
--	struct wlr_layer_surface_v1_state old_state = layer_surface->current;
--	layer_surface->current = layer_surface->pending;
--	arrange_layers(output);
--	layer_surface->current = old_state;
+@@ -146,7 +146,12 @@ static void arrange_layer(struct wlr_output *output,
+ 		apply_exclusive(usable_area, state->anchor, state->exclusive_zone,
+ 				state->margin.top, state->margin.right,
+ 				state->margin.bottom, state->margin.left);
+-		wlr_layer_surface_v1_configure(layer, box.width, box.height);
++		if (layer->initialized) {
++			wlr_layer_surface_v1_configure(layer, box.width, box.height);
++		} else {
++			layer->current.actual_width = box.width;
++			layer->current.actual_height = box.height;
++		}
+ 	}
  }
+ 
