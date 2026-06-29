@@ -24,6 +24,7 @@
     (arguments
      (list
       #:tests? #f
+      #:configure-flags #~(list "-Dxwayland=false")
       #:phases
       #~(modify-phases %standard-phases
           (add-after 'unpack 'fix-wlroots-dep
