@@ -1,20 +1,15 @@
 diff --git a/output.c b/output.c
-index bd90659..b0de58b 100644
+index bd90659..6721737 100644
 --- a/output.c
 +++ b/output.c
-@@ -258,9 +258,14 @@ static void render_layer_surface(struct wlr_surface *surface,
- 	wlr_output_layout_output_coords(
- 			layer_surface->server->output_layout, output, &ox, &oy);
+@@ -260,7 +260,9 @@ static void render_layer_surface(struct wlr_surface *surface,
  	ox += layer_surface->geo.x + sx, oy += layer_surface->geo.y + sy;
-+	struct wlr_fbox dst_box = {
-+		.x = ox, .y = oy,
-+		.width = layer_surface->geo.width,
-+		.height = layer_surface->geo.height,
-+	};
  	struct wlr_render_texture_options options = {
  		.texture = texture,
 -		.dst_box = layer_surface->geo,
-+		.dst_box = dst_box,
++		.dst_box = { .x = ox, .y = oy,
++		             .width = layer_surface->geo.width,
++		             .height = layer_surface->geo.height },
  		.transform = wlr_output_transform_invert(surface->current.transform),
  	};
  	wlr_render_pass_add_texture(layer_surface->server->render_pass, &options);
