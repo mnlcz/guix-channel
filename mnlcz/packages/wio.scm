@@ -24,7 +24,9 @@
        (sha256
         (base32 "1y7dzhyna557a5gg8850mdfp34p0d6czn712h0gqs5li82p17zmi"))
        (patches (list (local-file
-                       "/home/mnlcz/Projects/guix-channel/patches/wio-layer-shell-0.20.patch")))))
+                       "/home/mnlcz/Projects/guix-channel/patches/wio-layer-shell-0.20.patch")
+		      (local-file
+			"/home/mnlcz/Projects/guix-channel/patches/wio-output-fbox-0.20.patch")))))
     (build-system meson-build-system)
     (arguments
      (list
