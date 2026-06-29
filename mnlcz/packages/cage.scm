@@ -1,6 +1,7 @@
 (define-module (mnlcz packages cage)
   #:use-module (guix packages)
   #:use-module (guix download)
+  #:use-module (guix gexp)
   #:use-module (guix build-system meson)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages pkg-config)
@@ -21,7 +22,15 @@
         (base32 "1a9l28cgfckw4vf6zzvs37vw9gfyrcw97y5rsy4afr2i2y1hraxc"))))
     (build-system meson-build-system)
     (arguments
-     (list #:tests? #f))
+     (list
+      #:tests? #f
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'fix-wlroots-dep
+            (lambda _
+              (substitute* "meson.build"
+                (("wlroots-0\\.19")
+                 "wlroots-0.20")))))))
     (native-inputs (list pkg-config))
     (inputs (list wayland (replace-mesa wlroots) libxkbcommon))
     (synopsis "Wayland kiosk compositor")
