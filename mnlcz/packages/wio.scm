@@ -1,4 +1,5 @@
 (define-module (mnlcz packages wio)
+  #:use-module (mnlcz packages cage)
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix gexp)
@@ -79,7 +80,7 @@ Type=Application
                   wayland-protocols
                   (replace-mesa wlroots)
                   libxkbcommon
-                  cage))
+                  cage-0.20))
     (synopsis "Wayland compositor inspired by Plan 9's rio")
     (description
      "Wio is a Wayland compositor with a similar look and feel to Plan 9's rio,
