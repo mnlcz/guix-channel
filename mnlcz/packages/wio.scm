@@ -30,6 +30,7 @@
     (build-system meson-build-system)
     (arguments
      (list
+      #:build-type "debug"
       #:tests? #f
       #:phases
       #~(modify-phases %standard-phases
