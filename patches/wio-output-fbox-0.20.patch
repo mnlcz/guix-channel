@@ -1,8 +1,18 @@
 diff --git a/output.c b/output.c
-index bd90659..6721737 100644
+index bd90659..39faa5d 100644
 --- a/output.c
 +++ b/output.c
-@@ -260,7 +260,9 @@ static void render_layer_surface(struct wlr_surface *surface,
+@@ -249,6 +249,9 @@ static void render_view_border(struct wlr_render_pass *render_pass,
+ static void render_layer_surface(struct wlr_surface *surface,
+ 								 int sx, int sy, void *data) {
+ 	struct wio_layer_surface *layer_surface = data;
++	if (!layer_surface->layer_surface->surface->mapped) {
++		return;
++	}
+ 	struct wlr_texture *texture = wlr_surface_get_texture(surface);
+ 	if (texture == NULL)
+ 		return;
+@@ -260,7 +263,9 @@ static void render_layer_surface(struct wlr_surface *surface,
  	ox += layer_surface->geo.x + sx, oy += layer_surface->geo.y + sy;
  	struct wlr_render_texture_options options = {
  		.texture = texture,
