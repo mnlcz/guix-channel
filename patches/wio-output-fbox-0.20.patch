@@ -1,13 +1,11 @@
 --- a/output.c
 +++ b/output.c
-@@ -148,10 +148,13 @@ static void render_layer_surface(struct wlr_surface *surface,
- 	double ox = 0, oy = 0;
+@@ -257,9 +257,13 @@ static void render_layer_surface(struct wlr_surface *surface,
  	wlr_output_layout_output_coords(
  			layer_surface->server->output_layout, output, &ox, &oy);
  	ox += layer_surface->geo.x + sx, oy += layer_surface->geo.y + sy;
 +	struct wlr_fbox dst_box = {
-+		.x = ox,
-+		.y = oy,
++		.x = ox, .y = oy,
 +		.width = layer_surface->geo.width,
 +		.height = layer_surface->geo.height,
 +	};
