@@ -19,12 +19,13 @@
        (method url-fetch)
        (uri "https://github.com/cage-kiosk/cage/archive/refs/tags/v0.2.1.tar.gz")
        (sha256
-        (base32 "1a9l28cgfckw4vf6zzvs37vw9gfyrcw97y5rsy4afr2i2y1hraxc"))))
+        (base32 "1a9l28cgfckw4vf6zzvs37vw9gfyrcw97y5rsy4afr2i2y1hraxc"))
+       (patches (list (local-file
+                "/home/mnlcz/Projects/guix-channel/patches/cage-xwayland-cursor-0.20.patch")))))
     (build-system meson-build-system)
     (arguments
      (list
       #:tests? #f
-      #:configure-flags #~(list "-Dxwayland=false")
       #:phases
       #~(modify-phases %standard-phases
           (add-after 'unpack 'fix-wlroots-dep

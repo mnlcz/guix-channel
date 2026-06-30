@@ -1,0 +1,15 @@
+diff --git a/cage.c b/cage.c
+index 9b7c510..3a61d34 100644
+--- a/cage.c
++++ b/cage.c
+@@ -555,9 +555,7 @@ main(int argc, char *argv[])
+ 		}
+ 		struct wlr_xcursor *xcursor = wlr_xcursor_manager_get_xcursor(xcursor_manager, DEFAULT_XCURSOR, 1);
+ 		if (xcursor) {
+-			struct wlr_xcursor_image *image = xcursor->images[0];
+-			wlr_xwayland_set_cursor(xwayland, image->buffer, image->width * 4, image->width, image->height,
+-						image->hotspot_x, image->hotspot_y);
++			(void)xcursor;
+ 		}
+ 	}
+ #endif
