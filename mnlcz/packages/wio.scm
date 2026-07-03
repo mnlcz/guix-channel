@@ -35,6 +35,7 @@
      (list
       #:build-type "debug"
       #:tests? #f
+      #:strip-binaries? #f
       #:phases
       #~(modify-phases %standard-phases
           (add-after 'unpack 'fix-wlroots-dep
