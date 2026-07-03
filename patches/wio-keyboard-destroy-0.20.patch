@@ -37,7 +37,7 @@ index 52f4004..fb75283 100644
  	keyboard->key.notify = keyboard_handle_key;
  	wl_signal_add(&wlr_keyboard->events.key, &keyboard->key);
 +	keyboard->destroy.notify = keyboard_handle_destroy;
-+	wl_signal_add(&wlr_keyboard->events.destroy, &keyboard->destroy);
++	wl_signal_add(&device->events.destroy, &keyboard->destroy);
  
  	wlr_seat_set_keyboard(server->seat, wlr_keyboard);
  	wl_list_insert(&server->keyboards, &keyboard->link);
