@@ -1,8 +1,18 @@
 diff --git a/layers.c b/layers.c
-index 6c5daaf..fe27657 100644
+index 6c5daaf..c73dec0 100644
 --- a/layers.c
 +++ b/layers.c
-@@ -147,6 +147,9 @@ static void arrange_layer(struct wlr_output *output,
+@@ -78,6 +78,9 @@ static void arrange_layer(struct wlr_output *output,
+ 			&full_area.width, &full_area.height);
+ 	wl_list_for_each_reverse(wio_surface, list, link) {
+ 		struct wlr_layer_surface_v1 *layer = wio_surface->layer_surface;
++		if (!layer->initialized) {
++			continue;
++		}
+ 		struct wlr_layer_surface_v1_state *state = &layer->current;
+ 		if (exclusive != (state->exclusive_zone > 0)) {
+ 			continue;
+@@ -147,6 +150,9 @@ static void arrange_layer(struct wlr_output *output,
  				state->margin.top, state->margin.right,
  				state->margin.bottom, state->margin.left);
  		wlr_layer_surface_v1_configure(layer, box.width, box.height);
@@ -12,7 +22,7 @@ index 6c5daaf..fe27657 100644
  	}
  }
  
-@@ -239,7 +242,8 @@ static void handle_destroy(struct wl_listener *listener, void *data) {
+@@ -239,7 +245,8 @@ static void handle_destroy(struct wl_listener *listener, void *data) {
  }
  
  static void handle_map(struct wl_listener *listener, void *data) {
