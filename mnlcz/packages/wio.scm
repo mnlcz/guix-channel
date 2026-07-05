@@ -29,7 +29,9 @@
 		      (local-file
 			"/home/mnlcz/Projects/guix-channel/patches/wio-keyboard-destroy-0.20.patch")
 		      (local-file
-			"/home/mnlcz/Projects/guix-channel/patches/wio-output-fbox-0.20.patch")))))
+			"/home/mnlcz/Projects/guix-channel/patches/wio-output-fbox-0.20.patch")
+		      (local-file
+			"/home/mnlcz/Projects/guix-channel/patches/wio-output-state-reinit-0.20.patch")))))
     (build-system meson-build-system)
     (arguments
      (list
