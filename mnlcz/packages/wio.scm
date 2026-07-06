@@ -33,7 +33,9 @@
 		      (local-file
 			"/home/mnlcz/Projects/guix-channel/patches/wio-output-state-reinit-0.20.patch")
 		      (local-file
-			"/home/mnlcz/Projects/guix-channel/patches/wio-input-cursorbtn-0.20.patch")))))
+			"/home/mnlcz/Projects/guix-channel/patches/wio-input-cursorbtn-0.20.patch")
+		      (local-file
+			"/home/mnlcz/Projects/guix-channel/patches/wio-input-dbg.patch")))))
     (build-system meson-build-system)
     (arguments
      (list
