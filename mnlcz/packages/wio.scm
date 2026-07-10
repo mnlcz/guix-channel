@@ -26,16 +26,16 @@
         (base32 "1y7dzhyna557a5gg8850mdfp34p0d6czn712h0gqs5li82p17zmi"))
        (patches (list (local-file
                        "/home/mnlcz/Projects/guix-channel/patches/wio-layer-shell-0.20.patch")
-		      (local-file
-			"/home/mnlcz/Projects/guix-channel/patches/wio-input-keyboard-destroy-0.20.patch")
-		      (local-file
-			"/home/mnlcz/Projects/guix-channel/patches/wio-output-fbox-0.20.patch")
-		      (local-file
-			"/home/mnlcz/Projects/guix-channel/patches/wio-output-state-reinit-0.20.patch")
-		      (local-file
-			"/home/mnlcz/Projects/guix-channel/patches/wio-input-cursorbtn-0.20.patch")
-		      (local-file
-			"/home/mnlcz/Projects/guix-channel/patches/wio-input-dbg.patch")))))
+                      (local-file
+                       "/home/mnlcz/Projects/guix-channel/patches/wio-input-keyboard-destroy-0.20.patch")
+                      (local-file
+                       "/home/mnlcz/Projects/guix-channel/patches/wio-output-fbox-0.20.patch")
+                      (local-file
+                       "/home/mnlcz/Projects/guix-channel/patches/wio-output-state-reinit-0.20.patch")
+                      (local-file
+                       "/home/mnlcz/Projects/guix-channel/patches/wio-input-cursorbtn-0.20.patch")
+                      (local-file
+                       "/home/mnlcz/Projects/guix-channel/patches/wio-input-dbg.patch")))))
     (build-system meson-build-system)
     (arguments
      (list
@@ -49,6 +49,12 @@
               (substitute* "meson.build"
                 (("wlroots-0\\.19")
                  "wlroots-0.20"))))
+          (add-after 'fix-wlroots-dep 'fix-cage-path
+            (lambda* (#:key inputs #:allow-other-keys)
+              (substitute* "main.c"
+                (("server\\.cage = \"cage -d\";")
+                 (string-append "server.cage = \""
+                                (search-input-file inputs "bin/cage") " -d\";")))))
           (add-after 'install 'install-extras
             (lambda* (#:key outputs #:allow-other-keys)
               (let* ((out (assoc-ref outputs "out"))
