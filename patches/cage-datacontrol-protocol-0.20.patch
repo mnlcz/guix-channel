@@ -1,0 +1,20 @@
+diff --git a/cage.c b/cage.c
+index 3a61d34..8f821ac 100644
+--- a/cage.c
++++ b/cage.c
+@@ -22,6 +22,7 @@
+ #include <wlr/render/allocator.h>
+ #include <wlr/render/wlr_renderer.h>
+ #include <wlr/types/wlr_compositor.h>
++#include <wlr/types/wlr_data_control_v1.h>
+ #include <wlr/types/wlr_data_device.h>
+ #include <wlr/types/wlr_export_dmabuf_v1.h>
+ #include <wlr/types/wlr_gamma_control_v1.h>
+@@ -385,6 +386,7 @@ main(int argc, char *argv[])
+ 		ret = 1;
+ 		goto end;
+ 	}
++	wlr_data_control_manager_v1_create(server.wl_display);
+ 
+ 	/* Configure a listener to be notified when new outputs are
+ 	 * available on the backend. We use this only to detect the

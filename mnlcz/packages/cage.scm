@@ -25,7 +25,9 @@
        (patches (list (local-file
                        "/home/mnlcz/Projects/guix-channel/patches/cage-xwayland-cursor-0.20.patch")
                       (local-file
-                       "/home/mnlcz/Projects/guix-channel/patches/cage-xwayland-destroy-0.20.patch")))))
+                       "/home/mnlcz/Projects/guix-channel/patches/cage-xwayland-destroy-0.20.patch")
+                      (local-file
+                       "/home/mnlcz/Projects/guix-channel/patches/cage-datacontrol-protocol-0.20.patch")))))
     (build-system meson-build-system)
     (arguments
      (list
