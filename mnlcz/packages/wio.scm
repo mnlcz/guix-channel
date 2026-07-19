@@ -38,8 +38,8 @@
                        "/home/mnlcz/Projects/guix-channel/patches/wio-input-dbg.patch")
                       (local-file
                        "/home/mnlcz/Projects/guix-channel/patches/wio-view-map-listener-leak-0.20.patch")
-		      (local-file
-			"/home/mnlcz/Projects/guix-channel/patches/wio-hide-0.20.patch")))))
+                      (local-file
+                       "/home/mnlcz/Projects/guix-channel/patches/wio-hide-0.20.patch")))))
     (build-system meson-build-system)
     (arguments
      (list
