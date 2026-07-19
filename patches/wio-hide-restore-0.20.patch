@@ -1,0 +1,92 @@
+diff --git a/include/server.h b/include/server.h
+index 7bb629f..5ae46ec 100644
+--- a/include/server.h
++++ b/include/server.h
+@@ -58,6 +58,7 @@ struct wio_server {
+ 	struct wl_list pointers;
+ 	struct wl_list keyboards;
+ 	struct wl_list views;
++	struct wl_list hidden_views;
+ 	struct wl_list new_views;
+ 
+ 	struct wl_listener new_output;
+diff --git a/include/view.h b/include/view.h
+index 7c276c0..050ee96 100644
+--- a/include/view.h
++++ b/include/view.h
+@@ -44,6 +44,7 @@ void wio_view_focus(struct wio_view *view, struct wlr_surface *surface);
+ struct wio_view *wio_view_at(struct wio_server *server, double lx, double ly,
+ 		struct wlr_surface **surface, double *sx, double *sy);
+ void wio_view_move(struct wio_view *view, int x, int y);
++void wio_view_hide(struct wio_view *view);
+ struct wlr_box wio_which_box(struct wio_server *server);
+ struct wlr_box wio_canon_box(struct wio_server *server, struct wlr_box box);
+ 
+diff --git a/input.c b/input.c
+index b425d91..5fcd37e 100644
+--- a/input.c
++++ b/input.c
+@@ -247,6 +247,10 @@ menu_handle_button(struct wio_server *server, struct wlr_pointer_button_event *e
+ 		server->input_state = INPUT_STATE_DELETE_SELECT;
+ 		wlr_cursor_set_xcursor(server->cursor, server->cursor_mgr, "hand1");
+ 		break;
++	case 4:
++		server->input_state = INPUT_STATE_HIDE_SELECT;
++		wlr_cursor_set_xcursor(server->cursor, server->cursor_mgr, "hand1");
++		break;
+ 	default:
+ 		server->input_state = INPUT_STATE_NONE;
+ 		break;
+@@ -437,6 +441,16 @@ handle_button_internal(struct wio_server *server, struct wlr_pointer_button_even
+ 		}
+ 		view_end_interactive(server);
+ 		break;
++	case INPUT_STATE_HIDE_SELECT:
++		if (event->state != WL_POINTER_BUTTON_STATE_PRESSED) {
++			break;
++		}
++		view = wio_view_at(server, server->cursor->x, server->cursor->y, &surface, &sx, &sy);
++		if (view) {
++			wio_view_hide(view);
++		}
++		view_end_interactive(server);
++		break;
+ 	default:
+ 		// TODO
+ 		break;
+diff --git a/main.c b/main.c
+index 9d1a5b4..b6102e4 100644
+--- a/main.c
++++ b/main.c
+@@ -227,6 +227,7 @@ int main(int argc, char *argv[]) {
+ 	wl_list_init(&server.pointers);
+ 
+ 	wl_list_init(&server.views);
++	wl_list_init(&server.hidden_views);
+ 	wl_list_init(&server.new_views);
+ 	server.xdg_shell = wlr_xdg_shell_create(server.wl_display, XDG_SHELL_VERSION);
+ 	server.xdg_shell_new_toplevel.notify = server_xdg_shell_new_toplevel;
+diff --git a/view.c b/view.c
+index e713593..fb2ff48 100644
+--- a/view.c
++++ b/view.c
+@@ -152,6 +152,19 @@ void wio_view_focus(struct wio_view *view, struct wlr_surface *surface) {
+ 	wl_list_insert(&view->server->views, &view->link);
+ }
+ 
++void wio_view_hide(struct wio_view *view) {
++	struct wio_server *server = view->server;
++	struct wlr_seat *seat = server->seat;
++
++	if (seat->keyboard_state.focused_surface == view->xdg_toplevel->base->surface) {
++		wlr_xdg_toplevel_set_activated(view->xdg_toplevel, false);
++		wlr_seat_keyboard_clear_focus(seat);
++	}
++
++	wl_list_remove(&view->link);
++	wl_list_insert(&server->hidden_views, &view->link);
++}
++
+ static bool view_at(struct wio_view *view,
+ 		double lx, double ly, struct wlr_surface **surface,
+ 		double *sx, double *sy) {
