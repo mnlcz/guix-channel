@@ -154,7 +154,7 @@ index 5fcd37e..bcdcb90 100644
  		break;
  	case INPUT_STATE_NEW_START:
 diff --git a/main.c b/main.c
-index b6102e4..6b59ab0 100644
+index b6102e4..3e598a9 100644
 --- a/main.c
 +++ b/main.c
 @@ -34,52 +34,62 @@
@@ -252,6 +252,15 @@ index b6102e4..6b59ab0 100644
  }
  
  static enum wl_output_transform str_to_transform(const char *str) {
+@@ -159,7 +169,7 @@ int main(int argc, char *argv[]) {
+ 	server.cage = "cage -d";
+ 	server.term = "alacritty";
+ 
+-	wlr_log_init(WLR_DEBUG, NULL);
++	wlr_log_init(WLR_ERROR, NULL);
+ 	wl_list_init(&server.output_configs);
+ 
+ 	parse_args(argc, argv, &server);
 diff --git a/output.c b/output.c
 index 0809c92..6a4fc45 100644
 --- a/output.c
