@@ -154,22 +154,41 @@ index 5fcd37e..bcdcb90 100644
  		break;
  	case INPUT_STATE_NEW_START:
 diff --git a/main.c b/main.c
-index b6102e4..040ae24 100644
+index b6102e4..6b59ab0 100644
 --- a/main.c
 +++ b/main.c
-@@ -35,51 +35,44 @@
+@@ -34,52 +34,62 @@
+ 
  #define XDG_SHELL_VERSION 2
  #define LAYER_SHELL_V1_VERSION 4
- 
++#define MENU_TEXT_MAX_WIDTH 120
++
 +struct wlr_texture *render_menu_text(struct wlr_renderer *renderer,
 +		cairo_t *cairo, cairo_surface_t *surf, const char *text) {
++	char buf[256];
++	snprintf(buf, sizeof(buf), "%s", text);
++
++	cairo_text_extents_t extents;
++	cairo_text_extents(cairo, buf, &extents);
++
++	if (extents.width > MENU_TEXT_MAX_WIDTH) {
++		size_t len = strlen(buf);
++		while (len > 0) {
++			len--;
++			snprintf(buf, sizeof(buf), "%.*s...", (int)len, text);
++			cairo_text_extents(cairo, buf, &extents);
++			if (extents.width <= MENU_TEXT_MAX_WIDTH) {
++				break;
++			}
++		}
++	}
++
 +	cairo_set_operator(cairo, CAIRO_OPERATOR_CLEAR);
 +	cairo_paint(cairo);
 +	cairo_set_operator(cairo, CAIRO_OPERATOR_SOURCE);
-+	cairo_text_extents_t extents;
-+	cairo_text_extents(cairo, text, &extents);
++	cairo_text_extents(cairo, buf, &extents);
 +	cairo_move_to(cairo, 0, extents.height);
-+	cairo_show_text(cairo, text);
++	cairo_show_text(cairo, buf);
 +	cairo_surface_flush(surf);
 +	unsigned char *data = cairo_image_surface_get_data(surf);
 +	return wlr_texture_from_pixels(renderer,
@@ -177,8 +196,7 @@ index b6102e4..040ae24 100644
 +			cairo_image_surface_get_stride(surf),
 +			extents.width + 2, extents.height + 2, data);
 +}
-+
-+
+ 
  static void gen_menu_textures(struct wio_server *server) {
  	struct wlr_renderer *renderer = server->renderer;
  	// numbers pulled from ass
