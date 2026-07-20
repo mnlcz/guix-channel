@@ -1,8 +1,20 @@
 diff --git a/include/server.h b/include/server.h
-index 5ae46ec..17591a5 100644
+index 5ae46ec..2583fd1 100644
 --- a/include/server.h
 +++ b/include/server.h
-@@ -76,9 +76,13 @@ struct wio_server {
+@@ -34,6 +34,11 @@ enum wio_input_state {
+ 	INPUT_STATE_HIDE_SELECT,
+ };
+ 
++enum wio_menu_page {
++	MENU_PAGE_MAIN = 0,
++	MENU_PAGE_RESTORE,
++};
++
+ struct wio_server {
+ 	struct wl_display *wl_display;
+ 
+@@ -76,9 +81,10 @@ struct wio_server {
  	struct {
  		int x, y;
  		int width, height;
@@ -11,10 +23,7 @@ index 5ae46ec..17591a5 100644
 +		struct wlr_texture *active_textures[6];
 +		struct wlr_texture *inactive_textures[6];
  		int selected;
-+		enum wio_menu_page {
-+			MENU_PAGE_MAIN = 0,
-+			MENU_PAGE_RESTORE,
-+		};
++		enum wio_menu_page page;
  	} menu;
  
  	struct {
