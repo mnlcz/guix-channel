@@ -1,8 +1,15 @@
 diff --git a/include/server.h b/include/server.h
-index 5ae46ec..2583fd1 100644
+index 5ae46ec..b117a2e 100644
 --- a/include/server.h
 +++ b/include/server.h
-@@ -34,6 +34,11 @@ enum wio_input_state {
+@@ -1,5 +1,6 @@
+ #ifndef _WIO_SERVER_H
+ #define _WIO_SERVER_H
++#include <cairo/cairo.h>
+ #include <signal.h>
+ #include <wayland-server.h>
+ #include <wlr/backend.h>
+@@ -34,6 +35,11 @@ enum wio_input_state {
  	INPUT_STATE_HIDE_SELECT,
  };
  
@@ -14,7 +21,7 @@ index 5ae46ec..2583fd1 100644
  struct wio_server {
  	struct wl_display *wl_display;
  
-@@ -76,9 +81,10 @@ struct wio_server {
+@@ -76,9 +82,10 @@ struct wio_server {
  	struct {
  		int x, y;
  		int width, height;
@@ -27,6 +34,15 @@ index 5ae46ec..2583fd1 100644
  	} menu;
  
  	struct {
+@@ -135,5 +142,8 @@ void server_cursor_button(struct wl_listener *listener, void *data);
+ void server_cursor_axis(struct wl_listener *listener, void *data);
+ void server_cursor_frame(struct wl_listener *listener, void *data);
+ void seat_request_cursor(struct wl_listener *listener, void *data);
++struct wlr_texture *render_menu_text(struct wlr_renderer *renderer,
++                                            cairo_t *cairo, cairo_surface_t *surf,
++                                            const char *text);
+ 
+ #endif
 diff --git a/input.c b/input.c
 index 5fcd37e..3cf7ba7 100644
 --- a/input.c
@@ -43,15 +59,73 @@ index 5fcd37e..3cf7ba7 100644
  		server->input_state = INPUT_STATE_NONE;
  		break;
 diff --git a/main.c b/main.c
-index b6102e4..c6f05e9 100644
+index b6102e4..38b3b27 100644
 --- a/main.c
 +++ b/main.c
-@@ -44,7 +44,7 @@ static void gen_menu_textures(struct wio_server *server) {
+@@ -35,6 +35,24 @@
+ #define XDG_SHELL_VERSION 2
+ #define LAYER_SHELL_V1_VERSION 4
+ 
++struct wlr_texture *render_menu_text(struct wlr_renderer *renderer,
++		cairo_t *cairo, cairo_surface_t *surf, const char *text) {
++	cairo_set_operator(cairo, CAIRO_OPERATOR_CLEAR);
++	cairo_paint(cairo);
++	cairo_set_operator(cairo, CAIRO_OPERATOR_SOURCE);
++	cairo_text_extents_t extents;
++	cairo_text_extents(cairo, text, &extents);
++	cairo_move_to(cairo, 0, extents.height);
++	cairo_show_text(cairo, text);
++	cairo_surface_flush(surf);
++	unsigned char *data = cairo_image_surface_get_data(surf);
++	return wlr_texture_from_pixels(renderer,
++			DRM_FORMAT_ARGB8888,
++			cairo_image_surface_get_stride(surf),
++			extents.width + 2, extents.height + 2, data);
++}
++
++
+ static void gen_menu_textures(struct wio_server *server) {
+ 	struct wlr_renderer *renderer = server->renderer;
+ 	// numbers pulled from ass
+@@ -44,38 +62,14 @@ static void gen_menu_textures(struct wio_server *server) {
  	cairo_set_font_size(cairo, 14);
  	cairo_set_source_rgb(cairo, 0, 0, 0);
  
 -	char *text[] = {"New", "Resize", "Move", "Delete", "Hide"};
 +	char *text[] = {"New", "Resize", "Move", "Delete", "Hide", "Restore"};
  	for (size_t i = 0; i < countof(text); ++i) {
- 		cairo_set_operator(cairo, CAIRO_OPERATOR_CLEAR);
- 		cairo_paint(cairo);
+-		cairo_set_operator(cairo, CAIRO_OPERATOR_CLEAR);
+-		cairo_paint(cairo);
+-		cairo_set_operator(cairo, CAIRO_OPERATOR_SOURCE);
+-		cairo_text_extents_t extents;
+-		cairo_text_extents(cairo, text[i], &extents);
+-		cairo_move_to(cairo, 0, extents.height);
+-		cairo_show_text(cairo, text[i]);
+-		cairo_surface_flush(surf);
+-		unsigned char *data = cairo_image_surface_get_data(surf);
+-		server->menu.inactive_textures[i] = wlr_texture_from_pixels(renderer,
+-				DRM_FORMAT_ARGB8888,
+-				cairo_image_surface_get_stride(surf),
+-				extents.width + 2, extents.height + 2, data);
++		server->menu.inactive_textures[i] = render_menu_text(renderer, cairo, surf, text[i]);
+ 	}
+ 
+ 	cairo_set_source_rgb(cairo, 1, 1, 1);
+ 	for (size_t i = 0; i < countof(text); ++i) {
+-		cairo_set_operator(cairo, CAIRO_OPERATOR_CLEAR);
+-		cairo_paint(cairo);
+-		cairo_set_operator(cairo, CAIRO_OPERATOR_SOURCE);
+-		cairo_text_extents_t extents;
+-		cairo_text_extents(cairo, text[i], &extents);
+-		cairo_move_to(cairo, 0, extents.height);
+-		cairo_show_text(cairo, text[i]);
+-		cairo_surface_flush(surf);
+-		unsigned char *data = cairo_image_surface_get_data(surf);
+-		server->menu.active_textures[i] = wlr_texture_from_pixels(renderer,
+-				DRM_FORMAT_ARGB8888,
+-				cairo_image_surface_get_stride(surf),
+-				extents.width + 2, extents.height + 2, data);
++		server->menu.active_textures[i] = render_menu_text(renderer, cairo, surf, text[i]);
+ 	}
+ 
+ 	cairo_destroy(cairo);
