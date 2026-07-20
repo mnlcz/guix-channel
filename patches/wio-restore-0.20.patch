@@ -52,11 +52,52 @@ index 5ae46ec..eae9f26 100644
 +                                            const char *text);
  
  #endif
+diff --git a/include/view.h b/include/view.h
+index 050ee96..cbe371e 100644
+--- a/include/view.h
++++ b/include/view.h
+@@ -45,6 +45,7 @@ struct wio_view *wio_view_at(struct wio_server *server, double lx, double ly,
+ 		struct wlr_surface **surface, double *sx, double *sy);
+ void wio_view_move(struct wio_view *view, int x, int y);
+ void wio_view_hide(struct wio_view *view);
++void wio_view_restore(struct wio_view *view);
+ struct wlr_box wio_which_box(struct wio_server *server);
+ struct wlr_box wio_canon_box(struct wio_server *server, struct wlr_box box);
+ 
 diff --git a/input.c b/input.c
-index 5fcd37e..02c8589 100644
+index 5fcd37e..bcdcb90 100644
 --- a/input.c
 +++ b/input.c
-@@ -251,6 +251,47 @@ menu_handle_button(struct wio_server *server, struct wlr_pointer_button_event *e
+@@ -230,6 +230,28 @@ server_cursor_motion_absolute( struct wl_listener *listener, void *data) {
+ static void
+ menu_handle_button(struct wio_server *server, struct wlr_pointer_button_event *event) {
+ 	server->menu.x = server->menu.y = -1;
++
++	if (server->menu.page == MENU_PAGE_RESTORE) {
++		int idx = server->menu.selected;
++		if (idx >= 0) {
++			int i = 0;
++			struct wio_view *v, *target = NULL;
++			wl_list_for_each(v, &server->hidden_views, link) {
++				if (i == idx) {
++					target = v;
++					break;
++				}
++				i++;
++			}
++			if (target) {
++				wio_view_restore(target);
++			}
++		}
++		server->menu.page = MENU_PAGE_MAIN;
++		server->input_state = INPUT_STATE_NONE;
++		return;
++	}
++	
+ 	switch (server->menu.selected) {
+ 	case 0:
+ 		server->input_state = INPUT_STATE_NEW_START;
+@@ -251,6 +273,47 @@ menu_handle_button(struct wio_server *server, struct wlr_pointer_button_event *e
  		server->input_state = INPUT_STATE_HIDE_SELECT;
  		wlr_cursor_set_xcursor(server->cursor, server->cursor_mgr, "hand1");
  		break;
@@ -104,6 +145,14 @@ index 5fcd37e..02c8589 100644
  	default:
  		server->input_state = INPUT_STATE_NONE;
  		break;
+@@ -364,6 +427,7 @@ handle_button_internal(struct wio_server *server, struct wlr_pointer_button_even
+ 		if (event->state == WL_POINTER_BUTTON_STATE_PRESSED) {
+ 			server->input_state = INPUT_STATE_NONE;
+ 			server->menu.x = server->menu.y = -1;
++			server->menu.page = MENU_PAGE_MAIN;
+ 		}
+ 		break;
+ 	case INPUT_STATE_NEW_START:
 diff --git a/main.c b/main.c
 index b6102e4..040ae24 100644
 --- a/main.c
@@ -237,3 +286,23 @@ index 0809c92..6a4fc45 100644
  			scale_box(&box, scale);
  			struct wlr_render_rect_options options = {
  				.box = box,
+diff --git a/view.c b/view.c
+index fb2ff48..48677d5 100644
+--- a/view.c
++++ b/view.c
+@@ -165,6 +165,15 @@ void wio_view_hide(struct wio_view *view) {
+ 	wl_list_insert(&server->hidden_views, &view->link);
+ }
+ 
++void wio_view_restore(struct wio_view *view) {
++	struct wio_server *server = view->server;
++
++	wl_list_remove(&view->link);
++	wl_list_insert(&server->views, &view->link);
++
++	wio_view_focus(view, view->xdg_toplevel->base->surface);
++}
++
+ static bool view_at(struct wio_view *view,
+ 		double lx, double ly, struct wlr_surface **surface,
+ 		double *sx, double *sy) {
