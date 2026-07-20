@@ -1,0 +1,48 @@
+diff --git a/include/server.h b/include/server.h
+index 5ae46ec..17591a5 100644
+--- a/include/server.h
++++ b/include/server.h
+@@ -76,9 +76,13 @@ struct wio_server {
+ 	struct {
+ 		int x, y;
+ 		int width, height;
+-		struct wlr_texture *active_textures[5];
+-		struct wlr_texture *inactive_textures[5];
++		struct wlr_texture *active_textures[6];
++		struct wlr_texture *inactive_textures[6];
+ 		int selected;
++		enum wio_menu_page {
++			MENU_PAGE_MAIN = 0,
++			MENU_PAGE_RESTORE,
++		};
+ 	} menu;
+ 
+ 	struct {
+diff --git a/input.c b/input.c
+index 5fcd37e..3cf7ba7 100644
+--- a/input.c
++++ b/input.c
+@@ -251,6 +251,10 @@ menu_handle_button(struct wio_server *server, struct wlr_pointer_button_event *e
+ 		server->input_state = INPUT_STATE_HIDE_SELECT;
+ 		wlr_cursor_set_xcursor(server->cursor, server->cursor_mgr, "hand1");
+ 		break;
++	case 5:
++		/* TODO: flip to MENU_PAGE_RESTORE if hidden_views non-empty */
++		server->input_state = INPUT_STATE_NONE;
++		break;
+ 	default:
+ 		server->input_state = INPUT_STATE_NONE;
+ 		break;
+diff --git a/main.c b/main.c
+index b6102e4..c6f05e9 100644
+--- a/main.c
++++ b/main.c
+@@ -44,7 +44,7 @@ static void gen_menu_textures(struct wio_server *server) {
+ 	cairo_set_font_size(cairo, 14);
+ 	cairo_set_source_rgb(cairo, 0, 0, 0);
+ 
+-	char *text[] = {"New", "Resize", "Move", "Delete", "Hide"};
++	char *text[] = {"New", "Resize", "Move", "Delete", "Hide", "Restore"};
+ 	for (size_t i = 0; i < countof(text); ++i) {
+ 		cairo_set_operator(cairo, CAIRO_OPERATOR_CLEAR);
+ 		cairo_paint(cairo);
