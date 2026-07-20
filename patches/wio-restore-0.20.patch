@@ -1,5 +1,5 @@
 diff --git a/include/server.h b/include/server.h
-index 5ae46ec..eae9f26 100644
+index 5ae46ec..f240c83 100644
 --- a/include/server.h
 +++ b/include/server.h
 @@ -1,5 +1,6 @@
@@ -43,13 +43,14 @@ index 5ae46ec..eae9f26 100644
  	} menu;
  
  	struct {
-@@ -135,5 +148,8 @@ void server_cursor_button(struct wl_listener *listener, void *data);
+@@ -135,5 +148,9 @@ void server_cursor_button(struct wl_listener *listener, void *data);
  void server_cursor_axis(struct wl_listener *listener, void *data);
  void server_cursor_frame(struct wl_listener *listener, void *data);
  void seat_request_cursor(struct wl_listener *listener, void *data);
 +struct wlr_texture *render_menu_text(struct wlr_renderer *renderer,
 +                                            cairo_t *cairo, cairo_surface_t *surf,
 +                                            const char *text);
++void free_restore_textures(struct wio_server *server);
  
  #endif
 diff --git a/include/view.h b/include/view.h
@@ -65,10 +66,10 @@ index 050ee96..cbe371e 100644
  struct wlr_box wio_canon_box(struct wio_server *server, struct wlr_box box);
  
 diff --git a/input.c b/input.c
-index 5fcd37e..bcdcb90 100644
+index 5fcd37e..71f0e7c 100644
 --- a/input.c
 +++ b/input.c
-@@ -230,6 +230,28 @@ server_cursor_motion_absolute( struct wl_listener *listener, void *data) {
+@@ -230,6 +230,29 @@ server_cursor_motion_absolute( struct wl_listener *listener, void *data) {
  static void
  menu_handle_button(struct wio_server *server, struct wlr_pointer_button_event *event) {
  	server->menu.x = server->menu.y = -1;
@@ -89,6 +90,7 @@ index 5fcd37e..bcdcb90 100644
 +				wio_view_restore(target);
 +			}
 +		}
++		free_restore_textures(server);
 +		server->menu.page = MENU_PAGE_MAIN;
 +		server->input_state = INPUT_STATE_NONE;
 +		return;
@@ -97,11 +99,13 @@ index 5fcd37e..bcdcb90 100644
  	switch (server->menu.selected) {
  	case 0:
  		server->input_state = INPUT_STATE_NEW_START;
-@@ -251,6 +273,47 @@ menu_handle_button(struct wio_server *server, struct wlr_pointer_button_event *e
+@@ -251,6 +274,49 @@ menu_handle_button(struct wio_server *server, struct wlr_pointer_button_event *e
  		server->input_state = INPUT_STATE_HIDE_SELECT;
  		wlr_cursor_set_xcursor(server->cursor, server->cursor_mgr, "hand1");
  		break;
 +	case 5: {
++		free_restore_textures(server);
++
 +		if (wl_list_empty(&server->hidden_views)) {
 +			server->input_state = INPUT_STATE_NONE;
 +			break;
@@ -145,19 +149,20 @@ index 5fcd37e..bcdcb90 100644
  	default:
  		server->input_state = INPUT_STATE_NONE;
  		break;
-@@ -364,6 +427,7 @@ handle_button_internal(struct wio_server *server, struct wlr_pointer_button_even
+@@ -364,6 +430,8 @@ handle_button_internal(struct wio_server *server, struct wlr_pointer_button_even
  		if (event->state == WL_POINTER_BUTTON_STATE_PRESSED) {
  			server->input_state = INPUT_STATE_NONE;
  			server->menu.x = server->menu.y = -1;
 +			server->menu.page = MENU_PAGE_MAIN;
++			free_restore_textures(server);
  		}
  		break;
  	case INPUT_STATE_NEW_START:
 diff --git a/main.c b/main.c
-index b6102e4..3e598a9 100644
+index b6102e4..8834879 100644
 --- a/main.c
 +++ b/main.c
-@@ -34,52 +34,62 @@
+@@ -34,52 +34,74 @@
  
  #define XDG_SHELL_VERSION 2
  #define LAYER_SHELL_V1_VERSION 4
@@ -195,6 +200,18 @@ index b6102e4..3e598a9 100644
 +			DRM_FORMAT_ARGB8888,
 +			cairo_image_surface_get_stride(surf),
 +			extents.width + 2, extents.height + 2, data);
++}
++
++void free_restore_textures(struct wio_server *server) {
++	for (int i = 0; i < server->menu.restore_texture_count; ++i) {
++		wlr_texture_destroy(server->menu.restore_active_textures[i]);
++		wlr_texture_destroy(server->menu.restore_inactive_textures[i]);
++	}
++	free(server->menu.restore_active_textures);
++	free(server->menu.restore_inactive_textures);
++	server->menu.restore_active_textures = NULL;
++	server->menu.restore_inactive_textures = NULL;
++	server->menu.restore_texture_count = 0;
 +}
  
  static void gen_menu_textures(struct wio_server *server) {
@@ -252,7 +269,7 @@ index b6102e4..3e598a9 100644
  }
  
  static enum wl_output_transform str_to_transform(const char *str) {
-@@ -159,7 +169,7 @@ int main(int argc, char *argv[]) {
+@@ -159,7 +181,7 @@ int main(int argc, char *argv[]) {
  	server.cage = "cage -d";
  	server.term = "alacritty";
  
