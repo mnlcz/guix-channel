@@ -24,10 +24,10 @@
        (method git-fetch)
        (uri (git-reference
              (url "https://github.com/mnlcz/wio")
-             (commit "21ce3da8d5d6086baa4a711a32f226a99b132f7c")))
+             (commit "54ef86e512977879003a37115e4816aa38716f45")))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0n18jwz77ga5w21bmvhs4wmglz4y1xm68adch242wvm3cd17dpad"))))
+        (base32 "06xfrvkqbx977r10n0cwkcpjpdfbn3qqcqbv05rm51kf9s8syivp"))))
     (build-system meson-build-system)
     (arguments
      (list
