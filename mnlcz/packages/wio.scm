@@ -1,7 +1,7 @@
 (define-module (mnlcz packages wio)
   #:use-module (mnlcz packages cage)
   #:use-module (guix packages)
-  #:use-module (guix download)
+  #:use-module (guix git-download)
   #:use-module (guix gexp)
   #:use-module (guix build-system meson)
   #:use-module ((guix licenses)
@@ -20,28 +20,13 @@
     (version "0.0.1")
     (source
      (origin
-       (method url-fetch)
-       (uri "https://gitlab.com/Rubo/wio/-/archive/master/wio-master.tar.gz")
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/mnlcz/wio")
+             (commit "21ce3da8d5d6086baa4a711a32f226a99b132f7c")))
+       (file-name (git-file-name name version))
        (sha256
-        (base32 "1y7dzhyna557a5gg8850mdfp34p0d6czn712h0gqs5li82p17zmi"))
-       (patches (list (local-file
-                       "/home/mnlcz/Projects/guix-channel/patches/wio-layer-shell-0.20.patch")
-                      (local-file
-                       "/home/mnlcz/Projects/guix-channel/patches/wio-input-keyboard-destroy-0.20.patch")
-                      (local-file
-                       "/home/mnlcz/Projects/guix-channel/patches/wio-output-fbox-0.20.patch")
-                      (local-file
-                       "/home/mnlcz/Projects/guix-channel/patches/wio-output-state-reinit-0.20.patch")
-                      (local-file
-                       "/home/mnlcz/Projects/guix-channel/patches/wio-input-cursorbtn-0.20.patch")
-                      (local-file
-                       "/home/mnlcz/Projects/guix-channel/patches/wio-input-dbg.patch")
-                      (local-file
-                       "/home/mnlcz/Projects/guix-channel/patches/wio-view-map-listener-leak-0.20.patch")
-                      (local-file
-                       "/home/mnlcz/Projects/guix-channel/patches/wio-hide-0.20.patch")
-                      (local-file
-                       "/home/mnlcz/Projects/guix-channel/patches/wio-restore-0.20.patch")))))
+        (base32 "0n18jwz77ga5w21bmvhs4wmglz4y1xm68adch242wvm3cd17dpad"))))
     (build-system meson-build-system)
     (arguments
      (list
@@ -72,8 +57,7 @@
                     (display (string-append "#!/bin/sh\n"
                               "export __EGL_VENDOR_LIBRARY_FILENAMES="
                               "/gnu/store/jjvaib8vmzwrw39g9p8jzxmhl7k2hafw-nvda-580.15"
-                              "/share/glvnd/egl_vendor.d/10_nvidia.x86_64.json
-"
+                              "/share/glvnd/egl_vendor.d/10_nvidia.x86_64.json"
                               "export __EGL_EXTERNAL_PLATFORM_CONFIG_DIRS="
                               "/gnu/store/mg4kkzdvclsqpi43x0aa2nnrksqz791v-egl-wayland2-1.0.1"
                               "/share/egl/egl_external_platform.d:"
@@ -81,8 +65,7 @@
                               "/share/egl/egl_external_platform.d\n"
                               "export VK_ICD_FILENAMES="
                               "/gnu/store/jjvaib8vmzwrw39g9p8jzxmhl7k2hafw-nvda-580.15"
-                              "/share/vulkan/icd.d/nvidia_icd.x86_64.json
-"
+                              "/share/vulkan/icd.d/nvidia_icd.x86_64.json"
                               "export WLR_NO_HARDWARE_CURSORS=1\n"
                               "exec wio -t havoc\n") port)))
                 (chmod bin #o755)
@@ -108,3 +91,4 @@ Type=Application
 built on wlroots.")
     (home-page "https://gitlab.com/Rubo/wio")
     (license license:bsd-3)))
+
