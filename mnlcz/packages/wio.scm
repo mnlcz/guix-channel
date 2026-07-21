@@ -8,10 +8,11 @@
                 #:prefix license:)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages freedesktop)
+  #:use-module (gnu packages guile)
   #:use-module (gnu packages graphics)
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages xdisorg)
-  #:use-module (gnu packages wm)
+  #:use-module (gnu packages window-management)
   #:use-module (nongnu packages nvidia))
 
 (define-public wio
@@ -47,25 +48,34 @@
                  (string-append "server.cage = \""
                                 (search-input-file inputs "bin/cage") " -d\";")))))
           (add-after 'install 'install-extras
-            (lambda* (#:key outputs #:allow-other-keys)
+            (lambda* (#:key inputs outputs #:allow-other-keys)
               (let* ((out (assoc-ref outputs "out"))
                      (share (string-append out "/share/wayland-sessions"))
-                     (bin (string-append out "/bin/wio-session")))
+                     (bin (string-append out "/bin/wio-session"))
+                     (nvda-dir (assoc-ref inputs "nvda")))
                 (mkdir-p share)
                 (call-with-output-file bin
                   (lambda (port)
                     (display (string-append "#!/bin/sh\n"
-                              "export __EGL_VENDOR_LIBRARY_FILENAMES="
-                              "/gnu/store/jjvaib8vmzwrw39g9p8jzxmhl7k2hafw-nvda-580.15"
-                              "/share/glvnd/egl_vendor.d/10_nvidia.x86_64.json"
+                              "__EGL_VENDOR_LIBRARY_FILENAMES=\n"
+                              "for f in "
+                              nvda-dir
+                              "/share/glvnd/egl_vendor.d/*.json; do\n"
+                              "  __EGL_VENDOR_LIBRARY_FILENAMES=\"${__EGL_VENDOR_LIBRARY_FILENAMES:+$__EGL_VENDOR_LIBRARY_FILENAMES:}$f\"
+"
+                              "done\n"
+                              "export __EGL_VENDOR_LIBRARY_FILENAMES\n"
                               "export __EGL_EXTERNAL_PLATFORM_CONFIG_DIRS="
-                              "/gnu/store/mg4kkzdvclsqpi43x0aa2nnrksqz791v-egl-wayland2-1.0.1"
-                              "/share/egl/egl_external_platform.d:"
-                              "/gnu/store/h5qvl0sssi8p2knrfyvz5r0xhas2-egl-gbm-1.1.3"
+                              nvda-dir
                               "/share/egl/egl_external_platform.d\n"
-                              "export VK_ICD_FILENAMES="
-                              "/gnu/store/jjvaib8vmzwrw39g9p8jzxmhl7k2hafw-nvda-580.15"
-                              "/share/vulkan/icd.d/nvidia_icd.x86_64.json"
+                              "VK_ICD_FILENAMES=\n"
+                              "for f in "
+                              nvda-dir
+                              "/share/vulkan/icd.d/*.json; do\n"
+                              "  VK_ICD_FILENAMES=\"${VK_ICD_FILENAMES:+$VK_ICD_FILENAMES:}$f\"
+"
+                              "done\n"
+                              "export VK_ICD_FILENAMES\n"
                               "export WLR_NO_HARDWARE_CURSORS=1\n"
                               "exec wio -t havoc\n") port)))
                 (chmod bin #o755)
@@ -84,11 +94,13 @@ Type=Application
                   wayland-protocols
                   (replace-mesa wlroots)
                   libxkbcommon
-                  cage-0.20))
+                  cage-0.20
+                  guile-3.0
+                  nvda-580))
     (synopsis "Wayland compositor inspired by Plan 9's rio")
     (description
      "Wio is a Wayland compositor with a similar look and feel to Plan 9's rio,
 built on wlroots.")
-    (home-page "https://gitlab.com/Rubo/wio")
+    (home-page "https://github.com/mnlcz/wio")
     (license license:bsd-3)))
 
