@@ -8,7 +8,7 @@
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages xdisorg)
-  #:use-module (gnu packages wm)
+  #:use-module (gnu packages window-management)
   #:use-module (nongnu packages nvidia))
 
 (define-public cage-0.20
