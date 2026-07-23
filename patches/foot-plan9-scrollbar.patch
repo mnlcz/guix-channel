@@ -1,5 +1,5 @@
 diff --git a/config.c b/config.c
-index 481d4c4..060801f 100644
+index 481d4c4..5c08696 100644
 --- a/config.c
 +++ b/config.c
 @@ -1266,7 +1266,7 @@ parse_section_scrollback(struct context *ctx)
@@ -16,7 +16,7 @@ index 481d4c4..060801f 100644
      }
  
 +    else if (streq(key, "bar-width"))
-+        return value_to_uint32(ctx, 10, &conf->scrollback.multiplier);
++        return value_to_uint32(ctx, 10, &conf->bar.width);
 +
      else if (streq(key, "multiplier"))
          return value_to_float(ctx, &conf->scrollback.multiplier);
@@ -99,7 +99,7 @@ index f8e99df..f0f0f18 100644
      } scrollback;
  
 diff --git a/render.c b/render.c
-index cf5f969..bcf5b95 100644
+index cf5f969..5815cf5 100644
 --- a/render.c
 +++ b/render.c
 @@ -2997,6 +2997,86 @@ render_scrollback_position(struct terminal *term)
@@ -159,7 +159,7 @@ index cf5f969..bcf5b95 100644
 +            : (double)rebased_view / (populated_rows - term->rows);
 +
 +        int thumb_h = max(4, (int)((double)term->rows / populated_rows * height));
-+        int thumb_y = (int)(perent * (height - thumb_h));
++        int thumb_y = (int)(percent * (height - thumb_h));
 +
 +        /* Clamp */
 +        if (thumb_y + thumb_h > height)
