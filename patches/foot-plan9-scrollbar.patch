@@ -1,5 +1,5 @@
 diff --git a/config.c b/config.c
-index 481d4c4..5c08696 100644
+index 481d4c4..ec42820 100644
 --- a/config.c
 +++ b/config.c
 @@ -1266,7 +1266,7 @@ parse_section_scrollback(struct context *ctx)
@@ -16,7 +16,7 @@ index 481d4c4..5c08696 100644
      }
  
 +    else if (streq(key, "bar-width"))
-+        return value_to_uint32(ctx, 10, &conf->bar.width);
++        return value_to_uint32(ctx, 10, &conf->scrollback.bar.width);
 +
      else if (streq(key, "multiplier"))
          return value_to_float(ctx, &conf->scrollback.multiplier);
