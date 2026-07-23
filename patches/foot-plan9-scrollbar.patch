@@ -1,0 +1,230 @@
+diff --git a/config.c b/config.c
+index 481d4c4..060801f 100644
+--- a/config.c
++++ b/config.c
+@@ -1266,7 +1266,7 @@ parse_section_scrollback(struct context *ctx)
+ 
+         return value_to_enum(
+             ctx,
+-            (const char *[]){"none", "fixed", "relative", NULL},
++            (const char *[]){"none", "fixed", "relative", "left-bar", NULL},
+             (int *)&conf->scrollback.indicator.position);
+     }
+ 
+@@ -1283,6 +1283,9 @@ parse_section_scrollback(struct context *ctx)
+             return value_to_wchars(ctx, &conf->scrollback.indicator.text);
+     }
+ 
++    else if (streq(key, "bar-width"))
++        return value_to_uint32(ctx, 10, &conf->scrollback.multiplier);
++
+     else if (streq(key, "multiplier"))
+         return value_to_float(ctx, &conf->scrollback.multiplier);
+ 
+@@ -1503,6 +1506,20 @@ parse_color_theme(struct context *ctx, struct color_theme *theme)
+         return true;
+     }
+ 
++    else if (streq(key, "scrollback-bar")) {
++        if (!value_to_two_colors(
++                ctx,
++                &theme->scrollback_bar.track,
++                &theme->scrollback_bar.thumb,
++                false))
++        {
++            return false;
++        }
++
++        theme->use_custom.scrollback_bar = true;
++        return true;
++    }
++
+     else if (streq(key, "search-box-no-match")) {
+         if (!value_to_two_colors(
+                 ctx,
+@@ -3537,6 +3554,9 @@ config_load(struct config *conf, const char *conf_path,
+                 .format = SCROLLBACK_INDICATOR_FORMAT_TEXT,
+                 .text = xc32dup(U""),
+             },
++            .bar = {
++                .width = 10,
++            },
+             .multiplier = 3.,
+         },
+         .colors_dark = {
+diff --git a/config.h b/config.h
+index f8e99df..f0f0f18 100644
+--- a/config.h
++++ b/config.h
+@@ -171,6 +171,11 @@ struct color_theme {
+         uint32_t bg;
+     } scrollback_indicator;
+ 
++    struct {
++        uint32_t track;
++        uint32_t thumb;
++    } scrollback_bar;
++
+     struct {
+         struct {
+             uint32_t fg;
+@@ -187,6 +192,7 @@ struct color_theme {
+         bool cursor:1;
+         bool jump_label:1;
+         bool scrollback_indicator:1;
++        bool scrollback_bar:1;
+         bool url:1;
+         bool search_box_no_match:1;
+         bool search_box_match:1;
+@@ -315,7 +321,8 @@ struct config {
+             enum {
+                 SCROLLBACK_INDICATOR_POSITION_NONE,
+                 SCROLLBACK_INDICATOR_POSITION_FIXED,
+-                SCROLLBACK_INDICATOR_POSITION_RELATIVE
++                SCROLLBACK_INDICATOR_POSITION_RELATIVE,
++                SCROLLBACK_INDICATOR_POSITION_LEFT_BAR
+             } position;
+ 
+             enum {
+@@ -326,6 +333,11 @@ struct config {
+ 
+             char32_t *text;
+         } indicator;
++
++        struct {
++            uint32_t width;
++        } bar;
++
+         float multiplier;
+     } scrollback;
+ 
+diff --git a/render.c b/render.c
+index cf5f969..bcf5b95 100644
+--- a/render.c
++++ b/render.c
+@@ -2997,6 +2997,86 @@ render_scrollback_position(struct terminal *term)
+ 
+     struct wl_window *win = term->window;
+ 
++    /* LEFT_BAR: persistent full-height bar on the left margin */
++    if (term->conf->scrollback.indicator.position == SCROLLBACK_INDICATOR_POSITION_LEFT_BAR) {
++        const int bar_width = (int)term->conf->scrollback.bar.width;
++        if (bar_width <= 0)
++            return;
++
++        if (win->scrollback_indicator.surface.surf == NULL) {
++            if (!wayl_win_subsurface_new(win, &win->scrollback_indicator, false)) {
++                LOG_ERR("failed to create scrollback indicator surface");
++                return;
++            }
++        }
++
++        const int width = bar_width;
++        const int height = term->rows * term->cell_height;
++
++        struct buffer_chain *chain = term->render.chains.scrollback_indicator;
++        struct buffer *buf = shm_get_buffer(chain, width, height);
++
++        /* Track color */
++        uint32_t track = 0xff777777;
++        uint32_t thumb = 0xffffffff;
++        if (term->conf->colors_dark.use_custom.scrollback_bar) {
++            track = 0xff000000 | term->conf->colors_dark.scrollback_bar.track;
++            thumb = 0xff000000 | term->conf->colors_dark.scrollback_bar.thumb;
++        }
++
++        /* Fill track */
++        uint32_t *pixels = buf->data;
++        for (int y = 0; y < height; y++)
++            for (int x = 0; x < width; x++)
++                pixels[y * (buf->stride / 4) + x] = track;
++
++        /* Compute thumb geometry */
++        int scrollback_start = term->grid->offset + term->rows;
++        int empty_rows = 0;
++        while (term->grid->rows[scrollback_start & (term->grid->num_rows - 1)] == NULL) {
++            scrollback_start++;
++            empty_rows++;
++        }
++
++        int rebased_view = term->grid->view - scrollback_start + term->grid->num_rows;
++        rebased_view &= term->grid->num_rows - 1;
++
++        int populated_rows = term->grid->num_rows - empty_rows;
++        xassert(populated_rows > 0);
++
++        double percent =
++            rebased_view + term->rows >= populated_rows
++            ? 1.0
++            : (double)rebased_view / (populated_rows - term->rows);
++
++        int thumb_h = max(4, (int)((double)term->rows / populated_rows * height));
++        int thumb_y = (int)(perent * (height - thumb_h));
++
++        /* Clamp */
++        if (thumb_y + thumb_h > height)
++            thumb_y = height - thumb_h;
++
++        /* Fill thumb */
++        for (int y = thumb_y; y < thumb_y + thumb_h; y++)
++            for (int x = 0; x < width; x++)
++                pixels[y * (buf->stride / 4) + x] = thumb;
++
++        wl_subsurface_set_position(
++            win->scrollback_indicator.sub,
++            0,
++            roundf(term->margins.top /term->scale));
++
++        wl_surface_attach(
++            win->scrollback_indicator.surface.surf,
++            buf->wl_buf, 0, 0);
++        wl_surface_damage_buffer(
++            win->scrollback_indicator.surface.surf,
++            0, 0, width, height);
++        wl_surface_commit(win->scrollback_indicator.surface.surf);
++        return;
++    }
++
++    /* Original indicator logic */
+     if (term->grid->view == term->grid->offset) {
+         if (win->scrollback_indicator.surface.surf != NULL)
+             wayl_win_subsurface_destroy(&win->scrollback_indicator);
+@@ -3105,6 +3185,10 @@ render_scrollback_position(struct terminal *term)
+         surf_top = term->cell_height - margin + (int)(percent * pixels);
+         break;
+     }
++
++    case SCROLLBACK_INDICATOR_POSITION_LEFT_BAR:
++        /* handled above, never reached */
++        break;
+     }
+ 
+     int x = term->width - margin - width;
+@@ -4633,8 +4717,8 @@ render_resize(struct terminal *term, int width, int height, uint8_t opts)
+         term->conf->resize_by_cells)
+     {
+         /* If resizing in cell increments, restrict the width and height */
+-        width = ((width - (pad_left + pad_right)) / term->cell_width)
+-                * term->cell_width + (pad_left + pad_right);
++        width = ((width - (pad_left + pad_right) - (int)term->conf->scrollback.bar.width) / term->cell_width)
++                * term->cell_width + (pad_left + pad_right) + (int)term->conf->scrollback.bar.width;
+         width = max(min_width, roundf(scale * roundf(width / scale)));
+ 
+         height = ((height - (pad_top + pad_bottom)) / term->cell_height)
+@@ -4666,7 +4750,7 @@ render_resize(struct terminal *term, int width, int height, uint8_t opts)
+ 
+     /* Screen rows/cols after resize */
+     const int new_cols =
+-        (term->width - (pad_left + pad_right)) / term->cell_width;
++        (term->width - (pad_left + pad_right) - (int)term->conf->scrollback.bar.width) / term->cell_width;
+     const int new_rows =
+         (term->height - (pad_top + pad_bottom)) / term->cell_height;
+ 
+@@ -4726,6 +4810,7 @@ render_resize(struct terminal *term, int width, int height, uint8_t opts)
+     }
+     term->margins.right = total_x_pad - term->margins.left;
+     term->margins.bottom = total_y_pad - term->margins.top;
++    term->margins.left += (int)term->conf->scrollback.bar.width;
+ 
+     xassert(term->margins.left >= pad_left);
+     xassert(term->margins.right >= pad_right);
