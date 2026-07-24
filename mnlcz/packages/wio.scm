@@ -46,47 +46,7 @@
               (substitute* "main.c"
                 (("server\\.cage = \"cage -d\";")
                  (string-append "server.cage = \""
-                                (search-input-file inputs "bin/cage") " -d\";")))))
-          (add-after 'install 'install-extras
-            (lambda* (#:key inputs outputs #:allow-other-keys)
-              (let* ((out (assoc-ref outputs "out"))
-                     (share (string-append out "/share/wayland-sessions"))
-                     (bin (string-append out "/bin/wio-session"))
-                     (nvda-dir (assoc-ref inputs "nvda")))
-                (mkdir-p share)
-                (call-with-output-file bin
-                  (lambda (port)
-                    (display (string-append "#!/bin/sh\n"
-                              "__EGL_VENDOR_LIBRARY_FILENAMES=\n"
-                              "for f in "
-                              nvda-dir
-                              "/share/glvnd/egl_vendor.d/*.json; do\n"
-                              "  __EGL_VENDOR_LIBRARY_FILENAMES=\"${__EGL_VENDOR_LIBRARY_FILENAMES:+$__EGL_VENDOR_LIBRARY_FILENAMES:}$f\"
-"
-                              "done\n"
-                              "export __EGL_VENDOR_LIBRARY_FILENAMES\n"
-                              "export __EGL_EXTERNAL_PLATFORM_CONFIG_DIRS="
-                              nvda-dir
-                              "/share/egl/egl_external_platform.d\n"
-                              "VK_ICD_FILENAMES=\n"
-                              "for f in "
-                              nvda-dir
-                              "/share/vulkan/icd.d/*.json; do\n"
-                              "  VK_ICD_FILENAMES=\"${VK_ICD_FILENAMES:+$VK_ICD_FILENAMES:}$f\"
-"
-                              "done\n"
-                              "export VK_ICD_FILENAMES\n"
-                              "export WLR_NO_HARDWARE_CURSORS=1\n"
-                              "exec wio -t havoc\n") port)))
-                (chmod bin #o755)
-                (call-with-output-file (string-append share "/wio.desktop")
-                  (lambda (port)
-                    (display "[Desktop Entry]
-Name=wio
-Comment=Rio-inspired Wayland compositor
-Exec=wio-session
-Type=Application
-" port)))))))))
+                                (search-input-file inputs "bin/cage") " -d\";"))))))))
     (native-inputs (list pkg-config))
     (inputs (list cairo
                   libdrm
@@ -95,8 +55,7 @@ Type=Application
                   (replace-mesa wlroots)
                   libxkbcommon
                   cage-0.20
-                  guile-3.0
-                  nvda-580))
+                  guile-3.0))
     (synopsis "Wayland compositor inspired by Plan 9's rio")
     (description
      "Wio is a Wayland compositor with a similar look and feel to Plan 9's rio,
