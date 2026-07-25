@@ -9,5 +9,7 @@
     (source
      (origin
        (inherit (package-source foot))
-       (patches (list (local-file "../../patches/foot-plan9-scrollbar.patch")))))))
+       (patches (list (local-file "../../patches/foot-plan9-scrollbar.patch")
+                      (local-file
+                       "../../patches/foot-plan9-scrollbar-input.patch")))))))
 
