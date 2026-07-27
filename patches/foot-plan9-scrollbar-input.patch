@@ -1,8 +1,8 @@
 diff --git a/input.c b/input.c
-index 6a829a7..3814a7d 100644
+index 6a829a7..ff40513 100644
 --- a/input.c
 +++ b/input.c
-@@ -3244,6 +3244,44 @@ wl_pointer_button(void *data, struct wl_pointer *wl_pointer,
+@@ -3244,6 +3244,29 @@ wl_pointer_button(void *data, struct wl_pointer *wl_pointer,
          break;
  
      case TERM_SURF_GRID: {
@@ -24,22 +24,7 @@ index 6a829a7..3814a7d 100644
 +            if (button == BTN_LEFT) {
 +                cmd_scrollback_up(term, amount);
 +            } else if (button == BTN_RIGHT) {
-+                double pos_frac = (double)rel_y / bar_height;
-+                if (pos_frac < 0.0) pos_frac = 0.0;
-+                if (pos_frac > 1.0) pos_frac = 1.0;
-+
-+                int scrollback_start = term->grid->offset + term->rows;
-+                int empty_rows = 0;
-+                while (term->grid->rows[scrollback_start & (term->grid->num_rows - 1)] == NULL) {
-+                    scrollback_start++;
-+                    empty_rows++;
-+                }
-+                int populated_rows = term->grid->num_rows - empty_rows;
-+                int target = (int)(pos_frac * (populated_rows - term->rows));
-+                int new_view = (scrollback_start + target) & (term->grid->num_rows - 1);
-+                term->grid->view = new_view;
-+                term_damage_view(term);
-+                render_refresh(term);
++                cmd_scrollback_down(term, amount);
 +            }
 +            return;
 +        }
