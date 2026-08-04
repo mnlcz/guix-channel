@@ -4,6 +4,7 @@
   #:use-module (guix git-download)
   #:use-module (guix gexp)
   #:use-module (guix build-system meson)
+  #:use-module (guix search-paths)
   #:use-module ((guix licenses)
                 #:prefix license:)
   #:use-module (gnu packages pkg-config)
@@ -15,6 +16,11 @@
   #:use-module (gnu packages window-management)
   #:use-module (nongnu packages nvidia))
 
+(define (guile-effective-version pkg)
+  (let ((parts (string-split (package-version pkg) #\.)))
+    (string-append (car parts) "." (cadr parts))))
+
+
 (define-public wio
   (package
     (name "wio")
@@ -24,10 +30,10 @@
        (method git-fetch)
        (uri (git-reference
              (url "https://github.com/mnlcz/wio")
-             (commit "3b02d9d58f4b654f6422643eefe04047add3a50e")))
+             (commit "630259ccebf5bdd1d591117a5d7a8f62a6f00a2b")))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1a2aqr90dpblalhcvhkfwqkxgmd28s9zchm209wwnvajgrkvyd6f"))))
+        (base32 "04090yqpcdg9ynq67nzp2k3xj2agskarpmw7zzdlprar54dwn5hj"))))
     (build-system meson-build-system)
     (arguments
      (list
@@ -56,6 +62,11 @@
                   libxkbcommon
                   cage-0.20
                   guile-3.0))
+    (native-search-paths
+     (list (search-path-specification
+            (variable "GUILE_LOAD_PATH")
+            (files (list (string-append "share/guile/site/"
+                                        (guile-effective-version guile-3.0)))))))
     (synopsis "Wayland compositor inspired by Plan 9's rio")
     (description
      "Wio is a Wayland compositor with a similar look and feel to Plan 9's rio,
